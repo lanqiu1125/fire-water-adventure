@@ -1,0 +1,5 @@
+node_modules/
+tools/cloudflared.exe
+tools/tunnel-out.log
+tools/tunnel-err.log
+*.log

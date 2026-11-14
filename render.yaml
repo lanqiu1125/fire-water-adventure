@@ -1,0 +1,10 @@
+# Render 一键部署配置(Blueprint)
+# 上传到 GitHub 后,在 Render 选择 Blueprint 即可自动创建服务
+services:
+  - type: web
+    name: fire-water-adventure
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#ffe6f1">
+<title>冰火小冒险 · 双人合作联机闯关</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔥</text></svg>">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<canvas id="game-canvas"></canvas>
+
+<!-- 游戏 HUD -->
+<div id="hud">
+  <div class="hud-left">
+    <span id="hud-level" class="chip">第 1 关</span>
+    <span id="hud-role"></span>
+    <span id="hud-code" class="chip"></span>
+  </div>
+  <div class="hud-right">
+    <span id="hud-gems" class="chip">💎 0/0</span>
+    <span id="hud-deaths" class="chip">💫 0</span>
+    <span id="hud-ping" class="chip"></span>
+  </div>
+</div>
+<button id="btn-pause-top" title="暂停">⏸</button>
+
+<!-- 触屏控件 -->
+<div id="touch-ui">
+  <div id="joy-zone">
+    <div id="joy-base"><div id="joy-stick"></div></div>
+  </div>
+  <div id="touch-right">
+    <button id="btn-switch" title="切换角色">🔄</button>
+    <button id="btn-jump" title="跳跃">⤒</button>
+  </div>
+</div>
+
+<!-- 倒计时 -->
+<div id="countdown">
+  <div id="cd-num">3</div>
+  <div id="cd-info">第 1 关</div>
+  <div id="cd-hint">💡 提示</div>
+</div>
+
+<!-- 标题 -->
+<section id="screen-title" class="screen active">
+  <div class="title-logo">
+    <span class="bob fire">🔥</span>
+    <h1>冰火小冒险</h1>
+    <span class="bob water">💧</span>
+  </div>
+  <p class="title-sub">双人合作闯关 · 可爱又好玩 · 支持全网联机</p>
+  <div class="menu">
+    <button id="btn-solo" class="btn big">🎮 单机双人闯关</button>
+    <button id="btn-online" class="btn big">🌐 联机闯关</button>
+    <button id="btn-select" class="btn">📚 关卡选择</button>
+    <button id="btn-help" class="btn">❓ 玩法说明</button>
+    <button id="btn-music" class="btn small">🎵 音乐:开</button>
+  </div>
+  <p class="title-note">电脑: WASD 控制 🔥小火,方向键控制 💧小水<br>手机: 屏幕摇杆 + 跳跃按钮</p>
+</section>
+
+<!-- 选关 -->
+<section id="screen-select" class="screen">
+  <h2 id="select-title">选择关卡</h2>
+  <div id="level-grid"></div>
+  <button class="btn" data-back="title">← 返回</button>
+</section>
+
+<!-- 联机 -->
+<section id="screen-online" class="screen">
+  <h2>🌐 联机闯关</h2>
+  <div class="online-box">
+    <label class="field-label">服务器地址(留空 = 当前网站/本机)</label>
+    <input id="server-url" type="text" placeholder="例如 wss://你的服务器地址" autocomplete="off">
+    <button id="btn-create" class="btn big">➕ 创建房间</button>
+    <div class="divider">或者加入好友的房间</div>
+    <div class="row">
+      <input id="join-code" type="text" maxlength="4" placeholder="房间号" autocomplete="off">
+      <button id="btn-join" class="btn">🔑 加入</button>
+    </div>
+    <p class="hint-text">创建房间后把 4 位房间号发给朋友,无论相隔多远都能一起玩!<br>(房间号点击即可复制)</p>
+  </div>
+  <button class="btn" data-back="title">← 返回</button>
+</section>
+
+<!-- 等待房间 -->
+<section id="screen-wait" class="screen">
+  <h2>🏠 等待小伙伴…</h2>
+  <div class="wait-code-wrap">
+    <p class="hint-text">房间号(点一下复制,发给朋友):</p>
+    <div id="wait-code" class="wait-code">----</div>
+    <div id="wait-role"></div>
+  </div>
+  <p class="hint-text">好友在联机页面输入房间号即可加入,人数到齐自动开始!</p>
+  <button id="btn-cancel-wait" class="btn">取消</button>
+</section>
+
+<!-- 玩法说明 -->
+<section id="screen-help" class="screen">
+  <h2>❓ 玩法说明</h2>
+  <div class="help-box">
+    <p>🎯 <b>目标:</b>两个小伙伴都走到自己颜色的门(X=小火, Y=小水)就过关!宝石拿得越多、阵亡越少,星星越多!</p>
+    <p>🔥 <b>小火:</b>怕 <span class="tag water">💧水池</span> 和 <span class="tag poison">☠毒池</span>,不怕 <span class="tag lava">🌋岩浆</span>。</p>
+    <p>💧 <b>小水:</b>怕 <span class="tag lava">🌋岩浆</span> 和 <span class="tag poison">☠毒池</span>,不怕 <span class="tag water">💧水池</span>。</p>
+    <p>☠ <b>毒池/尖刺:</b>谁都怕,请绕行或跳过去!</p>
+    <p>🔘 <b>按钮与门:</b>踩住按钮门会开(松开后还会再开 1 秒多),一个人踩,另一个人过!</p>
+    <p>🛗 <b>电梯/移动桥:</b>站上去就会被带着走,看好时机。</p>
+    <p>🦘 <b>蹦床:</b>站上去一飞冲天,可以拿到高空宝石。</p>
+    <p>🕹 <b>操作:</b>电脑 = WASD/方向键;手机 = 摇杆+跳跃按钮,单机可点 🔄 切换角色。</p>
+    <p>🌐 <b>联机:</b>创建房间→分享房间号;断线 15 秒内可重连;队友掉线后你可以接管两个角色。</p>
+  </div>
+  <button class="btn" data-back="title">← 返回</button>
+</section>
+
+<!-- 暂停 -->
+<section id="screen-pause" class="screen">
+  <h2>⏸ 暂停中</h2>
+  <div class="menu">
+    <button id="btn-resume" class="btn big">▶️ 继续</button>
+    <button id="btn-retry" class="btn">🔄 重新开始本关</button>
+    <button id="btn-quit" class="btn">🚪 退出本关</button>
+  </div>
+</section>
+
+<!-- 结算 -->
+<section id="screen-complete" class="screen">
+  <h2>🎉 过关啦!</h2>
+  <div id="cp-stars" class="stars"></div>
+  <p id="cp-level" class="cp-line">第 1 关 完成!</p>
+  <p id="cp-stats" class="cp-line dim">宝石 0/0 · 阵亡 0 次</p>
+  <div class="menu">
+    <button id="btn-next" class="btn big">➡️ 下一关</button>
+    <button id="btn-replay" class="btn">🔁 再玩一次</button>
+    <button id="btn-back" class="btn">📚 返回选关</button>
+  </div>
+</section>
+
+<!-- 断线 -->
+<section id="screen-disconnect" class="screen">
+  <h2>📡 与服务器断开连接</h2>
+  <p class="hint-text">房间号 <span id="dc-code" class="wait-code small">----</span><br>15 秒内重连可以回到原来的房间!</p>
+  <div class="menu">
+    <button id="btn-dc-retry" class="btn big">🔁 重新连接</button>
+    <button id="btn-dc-back" class="btn">返回联机大厅</button>
+  </div>
+</section>
+
+<div id="toast"></div>
+
+<script src="js/audio.js"></script>
+<script src="js/levels.js"></script>
+<script src="js/gen.js"></script>
+<script src="js/input.js"></script>
+<script src="js/net.js"></script>
+<script src="js/game.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

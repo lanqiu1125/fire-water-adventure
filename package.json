@@ -1,0 +1,14 @@
+{
+  "name": "fire-water-adventure",
+  "version": "1.0.0",
+  "description": "冰火小冒险 —— 可爱画风的双人合作联机闯关游戏(类似森林冰火人),零依赖,支持 Windows/手机浏览器与全网联机",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "license": "MIT",
+  "private": true
+}
